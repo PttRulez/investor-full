@@ -1,0 +1,23 @@
+{
+  "name": "investor-turborepo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "turbo run build",
+    "clean": "turbo run clean",
+    "dev": "turbo run dev",
+    "start": "turbo run start",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "lint": "turbo run lint",
+    "test": "turbo run test"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "turbo": "^1.11.3"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ]
+}

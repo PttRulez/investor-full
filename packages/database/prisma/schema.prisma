@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Deal {
+  amount        Int
+  date          DateTime  @db.Date
+  exchange      String    
+  id            Int       @id @default(autoincrement())
+  portfolioId   Int
+  portfolio     Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  price         Float
+  securityId    Int
+  securityType  String
+  ticker        String
+  type          String
+
+  @@map("deals")
+}
+
+model Expert {
+  avatarUrl   String?
+  id          Int       @id @default(autoincrement())
+  name        String
+  opinions    Opinion[]
+  userId      Int
+
+  @@map("experts")
+}
+
+model MoexBond {
+  board     String
+  engine    String
+  id        Int        @id @default(autoincrement())
+  market    String
+  name      String
+  shortName String
+  ticker    String     @unique
+
+  @@map("moex_bonds")
+}
+
+model MoexCurrency {
+  board     String
+  engine    String
+  id        Int        @id @default(autoincrement())
+  market    String
+  name      String
+  shortName String
+  ticker    String     @unique
+
+  @@map("moex_currencies")
+}
+
+model MoexShare {
+  board     String
+  engine    String
+  id        Int        @id @default(autoincrement())
+  market    String
+  name      String
+  shortName String
+  ticker    String     @unique
+
+  @@map("moex_shares")
+}
+
+model Opinion {
+  createdBy     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date          DateTime  @db.Date
+  exchange      String
+  expertId      Int
+  expert        Expert    @relation(fields: [expertId], references: [id], onDelete: Cascade)
+  text          String
+  id            Int       @id @default(autoincrement())
+  securityType  String
+  securityId    Int
+  sourceLink    String?
+  targetPrice   Float?   
+  type          String
+  userId        Int
+
+  @@map("opinions")
+}
+
+model Portfolio {
+  compound        Boolean   @default(false)
+  deals           Deal[]
+  id              Int       @id @default(autoincrement())
+  name            String
+  positions       Position[]
+  transactions    Transaction[]
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          Int
+
+  @@map("portfolios")
+}
+
+model Position {
+  amount        Int
+  averagePrice  Int
+  exchange      String
+  id            Int       @id @default(autoincrement())
+  portfolio     Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  portfolioId   Int
+  securityId    Int
+  securityType  String
+  tradeSaldo    Int
+  
+  @@map("positions")
+}
+
+model Transaction {
+  amount      Int
+  date        DateTime  @db.Date
+  id          Int       @id @default(autoincrement())
+  portfolioId Int
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  type        String
+
+  @@map("transactions")
+}
+
+model User {
+  email          String      @unique
+  hashedPassword String
+  id             Int         @id @default(autoincrement())
+  name           String
+  opinions       Opinion[]
+  portfolios     Portfolio[]
+  role           String      @default("INVESTOR")
+
+  @@map("users")
+}
+
+
+
