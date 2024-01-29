@@ -25,4 +25,8 @@ jobs:
             npm install
             npm run db:prod --prefix packages/database
             npm run build
-            npm run start
+            npm run start &
+            until curl --output /dev/null --silent --fail http://localhost:3333; do
+              echo "Waiting for the application to start..."
+              sleep 5
+            done
