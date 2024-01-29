@@ -1,0 +1,27 @@
+name: Deploy to server
+run-name: deploying
+on:
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy using ssh
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_TIMEWEB_SWEATCLUB_ID_RSA_PRIVATE_KEY }}
+          port: 22
+          script: |
+            npx kill-port 3000
+            cd /var/www/pttrulez-subdomains/investor-full
+            git pull
+            npm install
+            npm run db:prod --prefix packages/database
+            npm run build
+            npm run start

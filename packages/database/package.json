@@ -4,10 +4,11 @@
   "main": "./dist/index.js",
   "types": "./index.ts",
   "scripts": {
-    "db:generate": "prisma generate",
-    "db:push": "prisma db push --skip-generate",
-    "db:migrate": "prisma migrate dev",
-    "db:reset": "prisma migrate reset",
+    "db:generate": "npx prisma generate",
+    "db:push": "npx prisma db push --skip-generate",
+    "db:migrate": "npx prisma migrate dev",
+    "db:prod": "npx prisma generate && yes | npx prisma migrate deploy",
+    "db:reset": "npx prisma migrate reset",
     "build": "tsc"
   },
   "dependencies": {

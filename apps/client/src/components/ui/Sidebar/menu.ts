@@ -33,7 +33,7 @@ const menu = (loggedIn: boolean): IMenuItem[] => {
   } else {
     menuItems = [
       {
-        title: 'Логин',
+        title: 'Логинизация',
         iconName: 'BusinessCenterIcon',
         link: '/login',
         active: false,
