@@ -81,7 +81,7 @@ export default function PortfoliosPage() {
     },
   ];
 
-  if (!session?.user) return;
+  // if (!session?.user) return;
 
   return (
     <>
