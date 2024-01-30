@@ -41,7 +41,7 @@ const options: NextAuthOptions = {
             name: 'connect.sid',
             value: decodeURIComponent(sessionIdCookie),
             httpOnly: true,
-            // secure: true,
+            secure: true,
           });
 
           return response.data;
