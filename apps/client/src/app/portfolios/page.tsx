@@ -25,12 +25,12 @@ const emptyPortfolio: NewPortfolio = {
 };
 
 export default function PortfoliosPage() {
-  const { data: session } = useSession({
-    required: true,
-    onUnauthenticated() {
-      redirect('/api/auth/signin?callbackUrl=/portfolios');
-    },
-  });
+  // const { data: session } = useSession({
+  //   required: true,
+  //   onUnauthenticated() {
+  //     redirect('/api/auth/signin?callbackUrl=/portfolios');
+  //   },
+  // });
 
   const [portfolioToEdit, setPortfolioToEdit] = useState<
     Portfolio | NewPortfolio | null
