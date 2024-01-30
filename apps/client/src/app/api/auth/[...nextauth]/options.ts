@@ -43,7 +43,6 @@ const options: NextAuthOptions = {
             httpOnly: true,
             sameSite: 'none',
             secure: true,
-            domain: process.env.NEXT_PUBLIC_INVESTOR_API_URL,
           });
 
           return response.data;
