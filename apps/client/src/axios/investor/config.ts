@@ -17,11 +17,11 @@ investorAxiosInstance.interceptors.response.use(
   function (response) {
     return response;
   },
-  function (error: AxiosError) {
-    if (error.response?.status === 401) {
-      signOut();
-    }
-  },
+  // function (error: AxiosError) {
+  //   if (error.response?.status === 401) {
+  //     signOut();
+  //   }
+  // },
 );
 
 export default investorAxiosInstance;
