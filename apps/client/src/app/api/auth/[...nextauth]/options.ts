@@ -41,6 +41,7 @@ const options: NextAuthOptions = {
             name: 'connect.sid',
             value: decodeURIComponent(sessionIdCookie),
             httpOnly: true,
+            sameSite: 'none',
             secure: true,
             domain: process.env.NEXT_PUBLIC_INVESTOR_API_URL,
           });
