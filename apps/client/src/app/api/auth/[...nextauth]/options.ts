@@ -42,6 +42,7 @@ const options: NextAuthOptions = {
             value: decodeURIComponent(sessionIdCookie),
             httpOnly: true,
             secure: true,
+            domain: process.env.NEXT_PUBLIC_INVESTOR_API_URL,
           });
 
           return response.data;
