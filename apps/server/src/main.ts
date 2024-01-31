@@ -7,6 +7,7 @@ import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix('apishka');
   app.enableCors({
     allowedHeaders: ['content-type'],
     origin: ['http://localhost:3000', 'https://investor.pttrulez.ru'],
