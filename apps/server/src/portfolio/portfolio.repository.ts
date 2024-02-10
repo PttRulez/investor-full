@@ -24,11 +24,14 @@ export class PortfolioRepository {
       include: {
         transactions: true,
         deals: true,
+        positions: true,
       },
     });
+
     if (!foundPortfolio) {
       return null;
     }
+
     return new Portfolio(foundPortfolio);
   }
 

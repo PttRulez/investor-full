@@ -1,5 +1,5 @@
 'use client';
-import { IOpinionResponse, OpinionType } from 'contracts';
+import { IOpinionResponse, OpinionFilters, OpinionType } from 'contracts';
 import { Box, Dialog, IconButton, Typography } from '@mui/material';
 import {
   MRT_ColumnDef,
@@ -8,10 +8,9 @@ import {
 } from 'material-react-table';
 import { SyntheticEvent, useMemo, useState } from 'react';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
-
-type Props = {
-  opinions: IOpinionResponse[];
-};
+import { useQuery } from '@tanstack/react-query';
+import investorService from '@/axios/investor/investor.service';
+import dayjs from '@/dayjs.config';
 
 const opinionTypeText = (type: OpinionType) => {
   switch (type) {
@@ -26,21 +25,36 @@ const opinionTypeText = (type: OpinionType) => {
   }
 };
 
-const OpinionsTable = ({ opinions }: Props) => {
+const OpinionsTable = ({ filters }: { filters: OpinionFilters }) => {
   const [opinionText, setOpinionText] = useState<null | string>(null);
+
+  const { data: opinions } = useQuery({
+    queryKey: [
+      'opinions',
+      {
+        exchange: filters.exchange,
+        securityId: filters.securityId,
+        securityType: filters.securityType,
+      },
+    ],
+    queryFn: () => investorService.opinion.getOpinionsList(filters),
+  });
 
   const columns = useMemo<Array<MRT_ColumnDef<IOpinionResponse>>>(
     () => [
       {
         header: 'Дата',
         accessorKey: 'date',
+        accessorFn: row => dayjs(row.date).format('DD MMMM YYYY'),
+        enableSorting: false,
+        enableColumnActions: false,
       },
       {
         header: 'Автор',
         accessorKey: 'expert.name',
       },
       {
-        header: 'Прогноз?',
+        header: 'Прогноз',
         id: 'type',
         accessorFn: row => {
           const { text, color } = opinionTypeText(row.type);
@@ -51,6 +65,10 @@ const OpinionsTable = ({ opinions }: Props) => {
             </Typography>
           );
         },
+      },
+      {
+        header: 'Целевая',
+        accessorKey: 'targetPrice',
       },
       {
         header: '',
@@ -74,16 +92,24 @@ const OpinionsTable = ({ opinions }: Props) => {
   const table = useMaterialReactTable<IOpinionResponse>({
     columns,
     data: opinions ?? [],
+    enableBottomToolbar: false,
+    enableRowActions: false,
+    enableSorting: false,
+    enableColumnActions: false,
+    enableToolbarInternalActions: false,
+    renderTopToolbar: false,
+    // renderToolbarInternalActions: _ => <div>toolbar</div>,
+    // renderBottomToolbar: _ => <div>bottom_toolbar</div>,
   });
 
   return (
     <>
       <MaterialReactTable table={table} />
       <Dialog open={!!opinionText} onClose={() => setOpinionText(null)}>
-        <Box>{opinionText}</Box>
+        <Box sx={{ padding: '10px' }}>{opinionText}</Box>
       </Dialog>
     </>
   );
 };
 
-// export default OpinionsTable;
+export default OpinionsTable;

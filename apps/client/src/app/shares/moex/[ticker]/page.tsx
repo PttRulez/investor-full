@@ -10,7 +10,7 @@ import { CandlestickData } from 'lightweight-charts';
 import { dependOn } from '@/utils/react-query';
 import OpinionForm from '@/app/opinions/components/OpinionForm/OpinionForm';
 import { Exchange, SecurityType } from 'contracts';
-import OpinionsTable from './components/OpinionsTable';
+import OpinionsTable from '@/app/opinions/components/OpinionsTable';
 
 const MoexSharePage = (): JSX.Element => {
   const { ticker } = useParams<{ ticker: string }>();
@@ -31,18 +31,6 @@ const MoexSharePage = (): JSX.Element => {
         market: shareData.market,
         board: shareData.board,
         ticker,
-      }),
-    ),
-  });
-
-  const { data: opinions } = useQuery({
-    queryKey: ['opinions', ticker],
-    enabled: !!shareData,
-    queryFn: dependOn(shareData, shareData =>
-      investorService.opinion.getOpinionsList({
-        exchange: Exchange.MOEX,
-        securityType: shareData.securityType,
-        securityId: shareData.id,
       }),
     ),
   });
@@ -89,7 +77,15 @@ const MoexSharePage = (): JSX.Element => {
       {chartData && (
         <CandlestickChart sx={{ marginBottom: '50px' }} data={chartData} />
       )}
-      {opinions && <OpinionsTable opinions={opinions} />}
+      {shareData && (
+        <OpinionsTable
+          filters={{
+            exchange: Exchange.MOEX,
+            securityType: shareData.securityType,
+            securityId: shareData.id,
+          }}
+        />
+      )}
       {shareData && (
         <Dialog
           fullWidth
@@ -99,6 +95,7 @@ const MoexSharePage = (): JSX.Element => {
         >
           <OpinionForm
             afterSuccessfulSubmit={() => setOpinionModalOpen(false)}
+            defaultName={shareData.name}
             securityId={shareData?.id}
             securityType={SecurityType.SHARE}
           />

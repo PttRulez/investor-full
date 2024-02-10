@@ -2,20 +2,18 @@
 
 import { SyntheticEvent, useState } from 'react';
 import { Dialog, IconButton } from '@mui/material';
-import AddNewButton from '@/components/ui/AddNewButton';
+import { AddNewButton } from '@pttrulez/mui-based-ui';
 import PortfolioForm from './components/PortfolioForm';
 import { useQuery } from '@tanstack/react-query';
 import investorService from '@/axios/investor/investor.service';
-import AdvancedTable, {
-  AdvancedTableColumn,
-} from '@/components/ui/AdvancedTable/AdvancedTable';
+import { AdvancedTable, AdvancedTableColumn } from '@pttrulez/mui-based-ui';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import { redirect, useRouter } from 'next/navigation';
 import Head from 'next/head';
-import { useSession } from 'next-auth/react';
 import { IPortfolioResponse as Portfolio } from 'contracts';
+import { useSession } from 'next-auth/react';
 
 type NewPortfolio = Pick<Portfolio, 'name' | 'compound'>;
 
@@ -25,12 +23,12 @@ const emptyPortfolio: NewPortfolio = {
 };
 
 export default function PortfoliosPage() {
-  // const { data: session } = useSession({
-  //   required: true,
-  //   onUnauthenticated() {
-  //     redirect('/api/auth/signin?callbackUrl=/portfolios');
-  //   },
-  // });
+  const { data: session } = useSession({
+    required: true,
+    onUnauthenticated() {
+      redirect('/api/auth/signin?callbackUrl=/portfolios');
+    },
+  });
 
   const [portfolioToEdit, setPortfolioToEdit] = useState<
     Portfolio | NewPortfolio | null

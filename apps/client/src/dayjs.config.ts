@@ -1,6 +1,6 @@
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 
 require('dayjs/locale/ru');
 dayjs.locale('ru');
 
-export default dayjs
+export default dayjs;

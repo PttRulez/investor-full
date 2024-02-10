@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, Logger } from '@nestjs/common';
+import { ImATeapotException, Injectable, Logger } from '@nestjs/common';
 import { catchError, firstValueFrom } from 'rxjs';
 import {
   IMoexApiResponseCurrentPrices,
@@ -53,7 +53,7 @@ export class MoexApi {
   async getStocksCurrentPrices(
     market: MoexMarket,
     tickers: string,
-  ): Promise<IMoexApiResponseCurrentPrices | void> {
+  ): Promise<IMoexApiResponseCurrentPrices> {
     //: Promise<IMoexApiResponseCurrentPrices> {
     try {
       const response = await firstValueFrom(
@@ -83,6 +83,7 @@ export class MoexApi {
         return response.data;
       }
     } catch (e) {
+      throw new ImATeapotException();
       console.log('[Moex-Api.Service.getStocksCurrentPrices ERROR]:', e);
     }
   }

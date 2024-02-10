@@ -1,8 +1,14 @@
-import { ImATeapotException, Injectable } from '@nestjs/common';
+import {
+  ImATeapotException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { IMoexApiResponseSecurityInfo, MoexRepoCreateShare } from '../types';
 import { MoexShare } from './share.model';
 import { MoexApi } from '../iss-api/moex-api.service';
+import { Position } from 'src/position/position.model';
+import { MoexMarket } from 'contracts';
 
 @Injectable()
 export class MoexShareService {
@@ -56,7 +62,7 @@ export class MoexShareService {
     return share;
   }
 
-  async getInfoByTicker(ticker: string): Promise<MoexShare | null> {
+  async getInfoByTicker(ticker: string): Promise<MoexShare> {
     const share = await this.prisma.moexShare.findUnique({
       where: {
         ticker,
@@ -77,5 +83,42 @@ export class MoexShareService {
     });
 
     return secs.map(s => new MoexShare(s));
+  }
+
+  async getOneById(id: number): Promise<MoexShare> {
+    const share = await this.prisma.moexShare.findUnique({ where: { id } });
+    if (!share) throw NotFoundException;
+    return new MoexShare(share);
+  }
+
+  async addCurrentPricesToPositions(
+    positions: Position[],
+  ): Promise<Position[]> {
+    const dbShares = await this.prisma.moexShare.findMany({
+      where: { id: { in: positions.map(p => p.securityId) } },
+    });
+
+    for (const position of positions) {
+      const share = dbShares.find(v => v.id === position.securityId);
+      if (!share) continue;
+      position.security = new MoexShare(share);
+    }
+
+    const sharePrices = await this.moexApi.getStocksCurrentPrices(
+      MoexMarket.shares,
+      positions.map(p => p.security!.ticker).join(','),
+    );
+
+    for (const p of positions) {
+      const currentPrice = sharePrices.securities.data.find(
+        priceData =>
+          priceData[0] === p.security!.ticker &&
+          priceData[1] === p.security!.board,
+      )![2];
+      p.currentPrice = currentPrice;
+      p.total = currentPrice * p.amount;
+    }
+
+    return positions;
   }
 }

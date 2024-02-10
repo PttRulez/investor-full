@@ -10,7 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { moexService } from '@/axios/moex/moex.service';
 import { Box, Typography } from '@mui/material';
 import { moexStockTypesRU } from '@/constants/moex';
-import { MoexSearchAutocompleteOption, MoexSearchHandler } from './types';
+import { MoexSearchAutocompleteOption } from './types';
 import { AxiosError } from 'axios';
 import { IMoexISSSearchResults } from 'contracts';
 

@@ -1,29 +1,42 @@
 import { SubmitHandler, useForm } from 'react-hook-form';
 import dayjs from 'dayjs';
-import DefaultFormBox from '@/components/ui/Forms/DefaultFormBox';
+import {
+  DefaultFormBox,
+  FormDatePicker,
+  FormSelect,
+  FormText,
+} from '@pttrulez/mui-based-ui';
+
 import {
   CreateOpinionData,
   Exchange,
   OpinionType,
+  SecurityResponse,
   SecurityType,
 } from 'contracts';
-import FormDatePicker from '@/components/ui/Forms/FormDatePicker';
-import FormSelect from '@/components/ui/Forms/FormSelect';
-import FormText from '@/components/ui/Forms/FormText';
 import { Button } from '@mui/material';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import investorService from '@/axios/investor/investor.service';
 import { useMemo } from 'react';
 import Grid from '@mui/material/Unstable_Grid2/Grid2';
+import MoexSearch from '@/components/ui/StocksSearch/MoexSearch';
+import {
+  MoexSearchAutocompleteOption,
+  MoexSearchHandler,
+} from '@/components/ui/StocksSearch/types';
+import { getSecurityTypeFromMoexSecType } from '@/utils/helpers';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface ExpertFormProps {
   afterSuccessfulSubmit: () => void;
-  securityId: number;
-  securityType: SecurityType;
+  defaultName?: string;
+  securityId?: number;
+  securityType?: SecurityType;
 }
 
 const OpinionForm = ({
   afterSuccessfulSubmit,
+  defaultName,
   securityId,
   securityType,
 }: ExpertFormProps) => {
@@ -34,9 +47,10 @@ const OpinionForm = ({
         exchange: Exchange.MOEX,
         securityId,
         securityType,
-        targetPrice: undefined,
       },
     });
+
+  const queryClient = useQueryClient();
 
   const watchAll = watch();
 
@@ -58,7 +72,10 @@ const OpinionForm = ({
     (formData: CreateOpinionData) =>
       investorService.opinion.createOpinion(formData),
     {
-      onSuccess: deal => {
+      onSuccess: opinion => {
+        queryClient.invalidateQueries({
+          queryKey: ['opinions'],
+        });
         afterSuccessfulSubmit();
       },
     },
@@ -68,14 +85,39 @@ const OpinionForm = ({
     createDeal.mutate(data);
   };
 
+  const defaultValue = (
+    defaultName ? { name: defaultName } : {}
+  ) as MoexSearchAutocompleteOption;
+
+  const onMoexChange: MoexSearchHandler = async (e, value, reason) => {
+    if (!value) {
+      resetField('securityId');
+      resetField('securityType');
+      return;
+    }
+
+    const secType = getSecurityTypeFromMoexSecType(value.type);
+
+    let security: Omit<SecurityResponse, 'exchange'>;
+    if (secType === SecurityType.SHARE) {
+      security = await investorService.moexShare.getByTicker(value.ticker);
+    } else {
+      security = await investorService.moexBond.getByTicker(value.ticker);
+    }
+
+    setValue('securityId', security.id);
+    setValue('securityType', security.securityType);
+  };
+
   return (
     <DefaultFormBox onSubmit={handleSubmit(onSubmit)}>
+      <MoexSearch onChange={onMoexChange} defaultValue={defaultValue} />
       <Grid container spacing={3} justifyContent="space-between">
         <Grid xs={6}>
           <FormDatePicker
             control={control}
             handleClear={() => resetField('date')}
-            onChange={newValue => {
+            onChange={(newValue: dayjs.Dayjs) => {
               if (newValue) {
                 setValue('date', newValue?.toDate());
               } else {

@@ -4,22 +4,16 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { PortfolioRepository } from './portfolio.repository';
-import { Exchange, IPortfolioResponse, SecurityType } from 'contracts';
+import { DealType, TransactionType } from 'contracts';
 import { PrismaCreatePortfolioData, PrismaUpdatePortfolioData } from './types';
 import { Portfolio } from './portfolio.model';
-import { MoexPositions } from 'src/position/moexpositions';
-import { Deal } from 'src/deal/deal.model';
-import { MoexBondService } from 'src/moex/bonds/bond.service';
-import { MoexShareService } from 'src/moex/shares/share.service';
-import { MoexApi } from 'src/moex/iss-api/moex-api.service';
+import { PositionService } from 'src/position/position.service';
 
 @Injectable()
 export class PortfolioService {
   constructor(
     private portfolioRepository: PortfolioRepository,
-    private readonly moexBondsService: MoexBondService,
-    private moexSharesService: MoexShareService,
-    private moexApi: MoexApi,
+    private positionService: PositionService,
   ) {}
 
   create(portfolioData: PrismaCreatePortfolioData): Promise<Portfolio> {
@@ -30,10 +24,7 @@ export class PortfolioService {
     return this.portfolioRepository.getAllUserPortfolios(userId);
   }
 
-  async getOneById(
-    userId: number,
-    portfolioId: number,
-  ): Promise<IPortfolioResponse> {
+  async getOneById(userId: number, portfolioId: number): Promise<Portfolio> {
     const portfolio = await this.portfolioRepository.findOne(portfolioId);
 
     if (!portfolio)
@@ -41,12 +32,8 @@ export class PortfolioService {
 
     if (!portfolio.belongsToUser(userId))
       throw new UnauthorizedException('Not your portfolio :(');
-
-    const moexPositions = await this.getMoexPositions(portfolio);
-
-    portfolio.loadPositions(moexPositions);
-
-    return portfolio.toJSON();
+    return portfolio;
+    // return portfolio.toJSON(this.positionService);
   }
 
   async update(
@@ -75,35 +62,53 @@ export class PortfolioService {
     return this.portfolioRepository.remove(portfolioId);
   }
 
-  // ---------------- UTILS, CALCULATIONS etc. ----------------
+  async calculateProfitability(portfolio: Portfolio): Promise<{
+    totalProfitLoss: number;
+    roi: number;
+    averageYearlyProfitability: number;
+  }> {
+    const dealProfitLoss = portfolio.deals.map(deal => {
+      if (deal.type === DealType.BUY) {
+        return deal.amount * deal.price * -1; // Cost
+      } else {
+        return deal.amount * deal.price; // Revenue
+      }
+    });
 
-  async getMoexPositions(model: Portfolio): Promise<MoexPositions> {
-    //): Promise<{ positions: MoexPositions; total: number }> {
-    // just resructuring Deal models in two arrays of bonds and shares
-    const moexDeals: { bonds: Deal[]; shares: Deal[] } = model.deals
-      .filter(d => d.exchange === Exchange.MOEX)
-      .reduce(
-        (acc: { bonds: Deal[]; shares: Deal[] }, deal: Deal) => {
-          if (deal.securityType === SecurityType.BOND) {
-            acc.bonds.push(deal);
-          } else {
-            acc.shares.push(deal);
-          }
-          return acc;
-        },
-        { bonds: [], shares: [] },
-      );
-
-    // empty result
-    const positions: MoexPositions = new MoexPositions(
-      moexDeals,
-      this.moexApi,
-      this.moexBondsService,
-      this.moexSharesService,
+    const totalCashFlows = portfolio.transactions.reduce(
+      (total, transaction) => {
+        if (transaction.type === TransactionType.CASHOUT) {
+          return total - transaction.amount;
+        } else {
+          return total + transaction.amount;
+        }
+      },
+      0,
     );
-    await positions.calculatePositions();
 
-    // const total = positions.bondsTotal + positions.sharesTotal;
-    return positions;
+    const totalDividends = 0;
+
+    const { bondPositions, sharePositions } =
+      await this.positionService.hydratePositionsForPortfolio(
+        portfolio.positions,
+      );
+    const positions = bondPositions.concat(sharePositions);
+    const remainingSharesValue = positions.reduce(
+      (total, position) => total + position.amount * position.currentPrice,
+      0,
+    );
+
+    const totalProfitLoss =
+      dealProfitLoss.reduce((total, profitLoss) => total + profitLoss, 0) +
+      totalDividends +
+      remainingSharesValue;
+
+    const initialInvestment = Math.abs(totalCashFlows) + remainingSharesValue;
+    const roi = (totalProfitLoss / initialInvestment) * 100;
+
+    const numYears = 1; // Number of years
+    const averageYearlyProfitability = totalProfitLoss / numYears;
+
+    return { totalProfitLoss, roi, averageYearlyProfitability };
   }
 }

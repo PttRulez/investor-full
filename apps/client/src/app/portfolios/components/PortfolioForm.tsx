@@ -1,8 +1,7 @@
 'use client';
 import { Box, Button, Stack } from '@mui/material';
 import { useForm } from 'react-hook-form';
-import FormText from '@/components/ui/Forms/FormText';
-import FormCheckBox from '@/components/ui/Forms/FormCheckBox';
+import { FormText, FormCheckBox } from '@pttrulez/mui-based-ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import investorService from '@/axios/investor/investor.service';
 import { CreatePortfolioData, UpdatePortfolioData } from 'contracts';

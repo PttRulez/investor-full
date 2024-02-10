@@ -10,7 +10,9 @@ export class SharesController {
   async getMoexShareInfoByTicker(
     @Param('ticker') ticker: string,
   ): Promise<IMoexSecurtiyResponse> {
-    const share = await this.moexShareSerivce.getInfoByTicker(ticker);
+    const share = await this.moexShareSerivce.getInfoByTicker(
+      ticker.toUpperCase(),
+    );
     if (share) {
       return share.toJSON();
     } else {

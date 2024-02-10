@@ -1,11 +1,38 @@
 'use client';
 
-import { Button, Dialog } from '@mui/material';
+import { Avatar, Button, Dialog } from '@mui/material';
 import { useState } from 'react';
 import ExpertForm from './components/ExpertForm/ExpertForm';
+import { IExpertResponse as Expert } from 'contracts';
+import { AdvancedTable, AdvancedTableColumn } from '@pttrulez/mui-based-ui';
+import { useQuery } from '@tanstack/react-query';
+import investorService from '@/axios/investor/investor.service';
+import { useRouter } from 'next/navigation';
+
+const columns: AdvancedTableColumn<Expert>[] = [
+  {
+    name: 'avatarUrl',
+    label: '',
+    format: (url: string) => {
+      return <Avatar src={url ?? 'https://avatar.iran.liara.run/public'} />;
+    },
+  },
+  {
+    name: 'name',
+    label: '',
+  },
+];
 
 const ExpertsPage = () => {
   const [expertModalOpen, setExperModalOpen] = useState<boolean>(false);
+
+  const { data: experts } = useQuery({
+    queryKey: ['allExperts'],
+    queryFn: () => investorService.expert.getExpertsList(),
+  });
+
+  const router = useRouter();
+
   return (
     <>
       <Button
@@ -19,6 +46,13 @@ const ExpertsPage = () => {
       >
         + Эксперт
       </Button>
+      <AdvancedTable
+        columns={columns}
+        rows={experts ?? []}
+        rowClick={(row: Expert) => {
+          router.push(`/experts/${row.id}`);
+        }}
+      />
       <Dialog open={expertModalOpen} onClose={() => setExperModalOpen(false)}>
         <ExpertForm afterSuccessfulSubmit={() => setExperModalOpen(false)} />
       </Dialog>

@@ -1,6 +1,7 @@
-import AdvancedTable, {
-  AdvancedTableColumn,
-} from '@/components/ui/AdvancedTable/AdvancedTable';
+import {
+  AdvancedTable,
+  type AdvancedTableColumn,
+} from '@pttrulez/mui-based-ui';
 import dayjs from '@/dayjs.config';
 import { ITransactionResponse, TransactionType } from 'contracts';
 import { IconButton } from '@mui/material';

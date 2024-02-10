@@ -1,8 +1,4 @@
-import {
-  PrismaPortfolio,
-  PortfolioWithRelations,
-  PortfolioPositions,
-} from './types';
+import { PrismaPortfolio, PortfolioWithRelations } from './types';
 import { Deal } from 'src/deal/deal.model';
 import {
   IPortfolioListResponse,
@@ -10,20 +6,15 @@ import {
   TransactionType,
 } from 'contracts';
 import { Transaction } from 'src/transaction/transaction.model';
+import { Position } from 'src/position/position.model';
+import { PositionService } from 'src/position/position.service';
 
 export class Portfolio {
-  bondsTotal: number = 0;
-  cash: number = 0;
-  cashoutsSum: number = 0;
   compound: boolean;
   deals: Array<Deal>;
-  depositsSum: number = 0;
   id: number;
   name: string;
-  positions?: PortfolioPositions;
-  profitability: string = '0%';
-  sharesTotal: number = 0;
-  total: number = 0;
+  positions: Position[];
   transactions: Array<Transaction>;
   userId: number;
 
@@ -40,32 +31,13 @@ export class Portfolio {
         : [];
 
     this.deals = 'deals' in dbModel ? dbModel.deals.map(d => new Deal(d)) : [];
+    this.positions = dbModel.positions
+      ? dbModel.positions.map(p => new Position(p))
+      : [];
   }
 
   belongsToUser(userId: number) {
     return userId === this.userId;
-  }
-
-  loadPositions(positions: PortfolioPositions): void {
-    this.positions = positions;
-    this.total = positions.bondsTotal + positions.sharesTotal;
-
-    this.cashoutsSum = this.sumCashouts();
-    this.depositsSum = this.sumDeposits();
-
-    this.cash =
-      this.depositsSum -
-      this.cashoutsSum +
-      positions.bonds
-        .concat(positions.shares)
-        .reduce((total, cur) => total + cur.tradeSaldo, 0);
-
-    this.profitability =
-      (this.depositsSum
-        ? ((this.total + this.cash + this.cashoutsSum) / this.depositsSum - 1) *
-          100
-        : 0
-      ).toFixed(1) + '%';
   }
 
   sumCashouts(): number {
@@ -92,32 +64,44 @@ export class Portfolio {
     };
   }
 
-  toJSON(): IPortfolioResponse {
-    const positions = this.positions
-      ? this.positions.toJSON()
-      : {
-          allPositions: [],
-          tradeSaldo: 0,
-          sharePositions: [],
-          bondPositions: [],
-          sharesTotal: 0,
-          bondsTotal: 0,
-        };
+  async toJSON(positionService: PositionService): Promise<IPortfolioResponse> {
+    const { bondPositions, sharePositions } =
+      await positionService.hydratePositionsForPortfolio(this.positions);
+    const allPositions = bondPositions.concat(sharePositions);
+
+    const positions = {
+      allPositions,
+      bondPositions,
+      bondsTotal: bondPositions.reduce((acc, p) => acc + p.total, 0),
+      sharePositions,
+      sharesTotal: sharePositions.reduce((acc, p) => acc + p.total, 0),
+    };
+
+    const cashoutsSum = this.sumCashouts();
+    const depositsSum = this.sumDeposits();
+    const total = positions.bondsTotal + positions.sharesTotal;
+    const profitability =
+      (((total + cashoutsSum) / depositsSum - 1) * 100).toLocaleString(
+        'ru-RU',
+        {
+          maximumFractionDigits: 1,
+        },
+      ) + '%';
 
     return {
-      cash: this.cash,
-      cashoutsSum: this.cashoutsSum,
+      cash: 0,
+      cashoutsSum,
       compound: this.compound,
       deals: this.deals.map(d => d.toJSON()),
-      depositsSum: this.depositsSum,
+      depositsSum,
       id: this.id,
       name: this.name,
       positions,
-      total: this.total,
+      total,
       transactions: this.transactions
         .sort((a, b) => (a.date > b.date ? 1 : -1))
         .map(t => t.toJSON()),
-      profitability: this.profitability,
+      profitability,
     };
   }
 }

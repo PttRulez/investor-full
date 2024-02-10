@@ -1,10 +1,9 @@
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { CreateExpertSchema, CreateExpertData } from 'contracts';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import investorService from '@/axios/investor/investor.service';
-import DefaultFormBox from '@/components/ui/Forms/DefaultFormBox';
-import FormText from '@/components/ui/Forms/FormText';
+import { DefaultFormBox, FormText } from '@pttrulez/mui-based-ui';
 import { Button } from '@mui/material';
 
 interface ExpertFormProps {
@@ -29,7 +28,7 @@ const ExpertForm = ({ afterSuccessfulSubmit }: ExpertFormProps) => {
   });
 
   const watchAll = watch();
-  // const client = useQueryClient();
+  const client = useQueryClient();
 
   const createExpert = useMutation(
     (formData: CreateExpertData) =>
@@ -37,9 +36,7 @@ const ExpertForm = ({ afterSuccessfulSubmit }: ExpertFormProps) => {
     {
       onSuccess: expert => {
         afterSuccessfulSubmit();
-        // client.invalidateQueries({
-        //   queryKey: ['portfolio', expert.id],
-        // });
+        client.invalidateQueries(['allExperts']);
       },
     },
   );

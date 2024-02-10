@@ -4,6 +4,6 @@ import { OpinionService } from './opinion.service';
 
 @Module({
   controllers: [OpinionController],
-  providers: [OpinionService]
+  providers: [OpinionService],
 })
 export class OpinionModule {}

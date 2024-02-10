@@ -6,6 +6,7 @@ import { MoexShareService } from 'src/moex/shares/share.service';
 import { MoexApi } from 'src/moex/iss-api/moex-api.service';
 import { MoexBondService } from 'src/moex/bonds/bond.service';
 import { PositionService } from 'src/position/position.service';
+import { OpinionService } from 'src/opinion/opinion.service';
 
 @Module({
   providers: [
@@ -14,6 +15,7 @@ import { PositionService } from 'src/position/position.service';
     MoexApi,
     MoexBondService,
     MoexShareService,
+    OpinionService,
     PositionService,
   ],
   controllers: [DealController],

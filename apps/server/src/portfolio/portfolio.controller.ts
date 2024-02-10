@@ -6,7 +6,6 @@ import {
   Patch,
   Param,
   Delete,
-  Logger,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -14,11 +13,14 @@ import { PortfolioService } from './portfolio.service';
 import { GetUserId } from '../auth/decorators';
 import { IPortfolioResponse, IPortfolioListResponse } from 'contracts';
 import { CreatePortfolioDto, UpdatePortfolioDto } from './portfolio.dto';
+import { PositionService } from 'src/position/position.service';
 
 @Controller('portfolio')
 export class PortfolioController {
-  private readonly logger = new Logger(PortfolioController.name);
-  constructor(private readonly portfolioService: PortfolioService) {}
+  constructor(
+    private readonly portfolioService: PortfolioService,
+    private positionService: PositionService,
+  ) {}
 
   @Get()
   async getAllUserPortfolios(
@@ -32,8 +34,24 @@ export class PortfolioController {
   async getOneById(
     @GetUserId() userId: number,
     @Param('id') id: string,
-  ): Promise<IPortfolioResponse> {
-    return this.portfolioService.getOneById(userId, Number(id));
+  ): Promise<
+    IPortfolioResponse & {
+      results: {
+        totalProfitLoss: number;
+        roi: number;
+        averageYearlyProfitability: number;
+      };
+    }
+  > {
+    const portfolio = await this.portfolioService.getOneById(
+      userId,
+      Number(id),
+    );
+    const results =
+      await this.portfolioService.calculateProfitability(portfolio);
+    console.log('results', results);
+    const json = await portfolio.toJSON(this.positionService);
+    return { ...json, results };
   }
 
   @Post()
@@ -45,7 +63,7 @@ export class PortfolioController {
       ...dto,
       userId,
     });
-    return portfolioModel.toJSON();
+    return portfolioModel.toJSON(this.positionService);
   }
 
   @Patch(':id')
@@ -59,7 +77,7 @@ export class PortfolioController {
       parseInt(portfolioId),
       updatePortfolioDto,
     );
-    return portfolioModel.toJSON();
+    return portfolioModel.toJSON(this.positionService);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -72,6 +90,6 @@ export class PortfolioController {
       userId,
       Number(portfolioId),
     );
-    return portfolioModel.toJSON();
+    return portfolioModel.toJSON(this.positionService);
   }
 }

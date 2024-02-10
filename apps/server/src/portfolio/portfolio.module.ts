@@ -6,10 +6,17 @@ import { MoexModule } from 'src/moex/moex.module';
 import { PositionModule } from 'src/position/position.module';
 import { PositionService } from 'src/position/position.service';
 import { MoexApi } from 'src/moex/iss-api/moex-api.service';
+import { OpinionService } from 'src/opinion/opinion.service';
 
 @Module({
   imports: [MoexModule, PositionModule],
   controllers: [PortfolioController],
-  providers: [PortfolioService, PortfolioRepository, PositionService, MoexApi],
+  providers: [
+    OpinionService,
+    PortfolioService,
+    PortfolioRepository,
+    PositionService,
+    MoexApi,
+  ],
 })
 export class PortfolioModule {}

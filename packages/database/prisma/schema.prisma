@@ -77,6 +77,7 @@ model Opinion {
   expert        Expert    @relation(fields: [expertId], references: [id], onDelete: Cascade)
   text          String
   id            Int       @id @default(autoincrement())
+  poisitions    OpinionsOnPositions[]
   securityType  String
   securityId    Int
   sourceLink    String?
@@ -85,6 +86,15 @@ model Opinion {
   userId        Int
 
   @@map("opinions")
+}
+
+model OpinionsOnPositions {
+  opinion     Opinion     @relation(fields: [opinionId], references: [id])
+  opinionId   Int
+  position    Position    @relation(fields: [positionId], references: [id])
+  positionId  Int
+
+  @@id([opinionId, positionId])
 }
 
 model Portfolio {
@@ -103,13 +113,16 @@ model Portfolio {
 model Position {
   amount        Int
   averagePrice  Int
+  comment       String?
   exchange      String
   id            Int       @id @default(autoincrement())
+  opinions      OpinionsOnPositions[]
   portfolio     Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
   portfolioId   Int
   securityId    Int
   securityType  String
   tradeSaldo    Int
+  targetPrice   Int?
   
   @@map("positions")
 }

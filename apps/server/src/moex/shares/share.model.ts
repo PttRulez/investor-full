@@ -1,5 +1,6 @@
 import { MoexShare as PrismaMoexShare } from 'database';
 import {
+  Exchange,
   IMoexSecurtiyResponse,
   MoexBoard,
   MoexEngine,
@@ -31,6 +32,7 @@ export class MoexShare {
     return {
       board: this.board,
       engine: this.engine,
+      exchange: Exchange.MOEX,
       id: this.id,
       market: this.market,
       name: this.name,

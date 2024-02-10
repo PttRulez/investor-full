@@ -1,5 +1,5 @@
 'use client';
-import { useMemo } from 'react';
+import { SyntheticEvent, useMemo, useState } from 'react';
 import {
   MaterialReactTable,
   type MRT_ColumnDef,
@@ -9,7 +9,16 @@ import PortfolioTableFooter from './PortfolioTableFooter';
 import { IPortfolioResponse, IPositionResponse, SecurityType } from 'contracts';
 import { getDefaultMRTOptions } from '@/utils/mrt-default-options';
 import PortfolioTableToolbar from './PortfolioTableToolbar';
-import { SelectChangeEvent } from '@mui/material';
+import {
+  Dialog,
+  IconButton,
+  SelectChangeEvent,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import PositionForm from '@/app/position/components/PositionForm';
+import { LightTooltip } from '@pttrulez/mui-based-ui';
 
 const defaultMRTOptions = getDefaultMRTOptions<IPositionResponse>();
 
@@ -20,6 +29,9 @@ const PortfolioTable = ({
   onChooseTransaction: (e: SelectChangeEvent) => void;
   portfolio: IPortfolioResponse;
 }) => {
+  const [positionToEdit, setPositionToEdit] =
+    useState<IPositionResponse | null>(null);
+
   const columns = useMemo<Array<MRT_ColumnDef<IPositionResponse>>>(
     () => [
       {
@@ -44,26 +56,59 @@ const PortfolioTable = ({
         accessorKey: 'security.name',
         size: 50,
       },
-      // {
-      //   header: 'Название короткое',
-      //   accessorKey: 'security.shortName',
-      //   size: 50,
-      // },
       {
         header: 'Кол-во',
         accessorKey: 'amount',
         size: 5,
       },
       {
-        header: 'Текущая\nцена',
+        header: 'Цена',
         accessorKey: 'currentPrice',
         size: 5,
       },
       {
-        header: 'Текущая\nстоимость',
-        accessorKey: 'total',
-        accessorFn: position => position.total.toLocaleString('RU-ru', {}),
+        header: 'Стоимость',
+        accessorFn: position =>
+          position.total.toLocaleString('ru-RU', { maximumFractionDigits: 0 }),
         size: 5,
+      },
+      {
+        header: 'Комент',
+        accessorKey: 'comment',
+        Cell: ({ row }) => {
+          return (
+            <LightTooltip title={row.original.comment}>
+              <Typography
+                sx={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: '-webkit-box',
+                  WebkitLineClamp: '2',
+                  WebkitBoxOrient: 'vertical',
+                }}
+              >
+                {row.original.comment}
+              </Typography>
+            </LightTooltip>
+          );
+        },
+        size: 5,
+      },
+      {
+        header: '',
+        accessorKey: 'total',
+        Cell: ({ row }) => {
+          return (
+            <IconButton
+              onClick={(e: SyntheticEvent) => {
+                e.stopPropagation();
+                setPositionToEdit(row.original);
+              }}
+            >
+              <EditIcon />
+            </IconButton>
+          );
+        },
       },
     ],
     [],
@@ -113,7 +158,24 @@ const PortfolioTable = ({
     ),
   });
 
-  return <MaterialReactTable table={table} />;
+  return (
+    <>
+      <MaterialReactTable table={table} />
+      <Dialog open={!!positionToEdit} onClose={() => setPositionToEdit(null)}>
+        {positionToEdit && (
+          <PositionForm
+            afterSuccessfulSubmit={() => setPositionToEdit(null)}
+            id={positionToEdit.id}
+            position={{
+              comment: positionToEdit.comment,
+              targetPrice: positionToEdit.targetPrice,
+            }}
+            portfolioId={portfolio.id}
+          />
+        )}
+      </Dialog>
+    </>
+  );
 };
 
 export default PortfolioTable;

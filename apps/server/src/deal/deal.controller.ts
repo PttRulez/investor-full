@@ -8,24 +8,23 @@ import {
   Post,
 } from '@nestjs/common';
 import { DealService } from './deal.service';
-import { Deal } from './deal.model';
 import { CreateDealDto } from './deal.dto';
-import { IDealResponse } from 'contracts';
+import { Deal } from './deal.model';
 
 @Controller('deal')
 export class DealController {
   constructor(private dealService: DealService) {}
 
+  @HttpCode(HttpStatus.CREATED)
   @Post()
-  async createDeal(@Body() dto: CreateDealDto): Promise<IDealResponse> {
-    const deal = await this.dealService.create(dto.ticker, new Deal(dto));
-    return deal.toJSON();
+  async createDeal(@Body() dto: CreateDealDto): Promise<void> {
+    const dealModel = new Deal(dto);
+    await this.dealService.create(dto.ticker, dealModel);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete('/:id')
-  async deleteDeal(@Param() params: { id: string }): Promise<IDealResponse> {
-    const deal = await this.dealService.delete(parseInt(params.id));
-    return deal.toJSON();
+  async deleteDeal(@Param() params: { id: string }): Promise<void> {
+    await this.dealService.delete(parseInt(params.id));
   }
 }

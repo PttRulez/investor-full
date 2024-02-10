@@ -1,20 +1,22 @@
 'use client';
 
 import { Button } from '@mui/material';
-import FormText from '@/components/ui/Forms/FormText';
+import {
+  DefaultFormBox,
+  FormText,
+  FormDatePicker,
+} from '@pttrulez/mui-based-ui';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { FC, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import MoexSearch from '@/components/ui/StocksSearch/MoexSearch';
-import FormDatePicker from '@/components/ui/Forms/FormDatePicker';
 import investorService from '@/axios/investor/investor.service';
 import { DealType, Exchange } from 'contracts';
 import { CreateDealSchema, CreateDealData } from 'contracts';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import { MoexSearchAutocompleteOption } from '@/components/ui/StocksSearch/types';
 import { getSecurityTypeFromMoexSecType } from '@/utils/helpers';
 import { zodResolver } from '@hookform/resolvers/zod';
-import DefaultFormBox from '@/components/ui/Forms/DefaultFormBox';
 
 interface DealFormProps {
   afterSuccessfulSubmit: () => void;
@@ -121,7 +123,7 @@ const CreateDealForm: FC<DealFormProps> = ({
         control={control}
         name={'date'}
         handleClear={() => resetField('date')}
-        onChange={newValue => {
+        onChange={(newValue: Dayjs) => {
           if (newValue) {
             setValue('date', newValue?.toDate());
           } else {

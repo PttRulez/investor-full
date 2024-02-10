@@ -2,8 +2,7 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import dayjs from 'dayjs';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import FormText from '@/components/ui/Forms/FormText';
-import FormDatePicker from '@/components/ui/Forms/FormDatePicker';
+import { FormText, FormDatePicker, FormSelect } from '@pttrulez/mui-based-ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   CreateTransactionSchema,
@@ -13,7 +12,6 @@ import {
 import investorService from '@/axios/investor/investor.service';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Button from '@mui/material/Button';
-import FormSelect from '@/components/ui/Forms/FormSelect';
 
 type Props = {
   afterSuccessfulSubmit: () => void;

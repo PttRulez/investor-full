@@ -9,6 +9,7 @@ import {
   InvestorPortfolio,
   InvestorTransaction,
 } from './domains/index';
+import { InvestorPosition } from './domains/position';
 
 class InvestorService {
   private static instance: InvestorService;
@@ -19,6 +20,7 @@ class InvestorService {
   public expert: InvestorExpert;
   public opinion: InvestorOpinion;
   public portfolio: InvestorPortfolio;
+  public position: InvestorPosition;
   public moexBond: InvestorMoexBond;
   public moexShare: InvestorMoexShare;
   public transaction: InvestorTransaction;
@@ -31,6 +33,7 @@ class InvestorService {
     this.moexShare = new InvestorMoexShare(this.investorApi);
     this.opinion = new InvestorOpinion(this.investorApi);
     this.portfolio = new InvestorPortfolio(this.investorApi);
+    this.position = new InvestorPosition(this.investorApi);
     this.transaction = new InvestorTransaction(this.investorApi);
   }
 

@@ -8,8 +8,8 @@ export const CreateOpinionSchema = z.object({
   text: z.string(),
   securityType: z.nativeEnum(SecurityType),
   securityId: z.number(),
-  sourceLink: z.string().optional(),
-  targetPrice: z.number().optional(),
+  sourceLink: z.string().nullable(),
+  targetPrice: z.number().nullable(),
   type: z.nativeEnum(OpinionType),
 });
 

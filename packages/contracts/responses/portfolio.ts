@@ -16,18 +16,21 @@ export interface IPortfolioResponse {
   transactions: ITransactionResponse[];
 }
 
+export interface IPositionResponse {
+  amount: number;
+  comment: string | null;
+  id: number;
+  currentPrice: number;
+  security: SecurityResponse;
+  targetPrice: number | null;
+  tradeSaldo: number;
+  total: number;
+}
+
 export type IPortfolioListResponse = Pick<
   IPortfolioResponse,
   "id" | "name" | "compound"
 >;
-
-export interface IPositionResponse {
-  amount: number;
-  currentPrice: number;
-  tradeSaldo: number;
-  security: SecurityResponse;
-  total: number;
-}
 
 export interface IPortfolioPositionsResponse {
   allPositions: Array<IPositionResponse>;

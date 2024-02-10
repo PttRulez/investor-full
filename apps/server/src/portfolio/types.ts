@@ -1,5 +1,4 @@
 import { Prisma } from 'database';
-import { MoexPositions } from 'src/position/moexpositions';
 
 export type PrismaCreatePortfolioData = {
   userId: number;
@@ -16,11 +15,9 @@ export type PrismaPortfolio = Prisma.PortfolioGetPayload<
 >;
 
 const portfolioWithRelations = Prisma.validator<Prisma.PortfolioDefaultArgs>()({
-  include: { transactions: true, deals: true },
+  include: { transactions: true, deals: true, positions: true },
 });
 
 export type PortfolioWithRelations = Prisma.PortfolioGetPayload<
   typeof portfolioWithRelations
 >;
-
-export type PortfolioPositions = MoexPositions;

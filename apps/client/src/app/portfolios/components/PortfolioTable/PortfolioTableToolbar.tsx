@@ -1,4 +1,4 @@
-import SelectInput from '@/components/ui/NonFormInputs/SelectInput';
+import { SelectInput } from '@pttrulez/mui-based-ui';
 import { SelectChangeEvent } from '@mui/material';
 
 type Props = {

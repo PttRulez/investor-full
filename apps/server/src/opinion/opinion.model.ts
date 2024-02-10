@@ -16,7 +16,8 @@ export class Opinion {
   id: number;
   securityType: SecurityType;
   securityId: number;
-  sourceLink?: string;
+  sourceLink: string | null;
+  targetPrice: number | null;
   type: OpinionType;
 
   constructor(opinion: PrismaOpinion);
@@ -31,9 +32,8 @@ export class Opinion {
     this.id = opinion.id;
     this.securityType = opinion.securityType as SecurityType;
     this.securityId = opinion.securityId;
-    if (opinion.sourceLink) {
-      this.sourceLink = opinion.sourceLink;
-    }
+    this.sourceLink = opinion.sourceLink;
+    this.targetPrice = opinion.targetPrice;
     this.type = opinion.type as OpinionType;
   }
 

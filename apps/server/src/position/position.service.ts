@@ -1,16 +1,52 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PrismaCreatePositionData, PrismaPosition } from './types';
+import {
+  DealType,
+  Exchange,
+  IPositionResponse,
+  SecurityType,
+  UpdatePositionData,
+} from 'contracts';
+import { Position } from './position.model';
+import { MoexBondService } from 'src/moex/bonds/bond.service';
 import { MoexShareService } from 'src/moex/shares/share.service';
-import { Deal } from 'src/deal/deal.model';
-import { DealType } from 'contracts';
 
 @Injectable()
 export class PositionService {
   constructor(
+    private moexBondService: MoexBondService,
     private moexShareService: MoexShareService,
     private prisma: PrismaService,
   ) {}
+
+  async getOneById(id: number) {
+    const dbData = await this.prisma.position.findUnique({
+      where: { id },
+    });
+    if (!dbData) throw NotFoundException;
+
+    return new Position(dbData);
+  }
+
+  async hydratePositionsForPortfolio(positions: Position[]): Promise<{
+    bondPositions: IPositionResponse[];
+    sharePositions: IPositionResponse[];
+  }> {
+    let bonds = positions.filter(p => p.securityType === SecurityType.BOND);
+    let shares = positions.filter(p => p.securityType === SecurityType.SHARE);
+
+    bonds = await this.moexBondService.addCurrentPricesToPositions(bonds);
+    shares = await this.moexShareService.addCurrentPricesToPositions(shares);
+
+    const bondPositions = bonds.map(p => p.toJSON());
+    const sharePositions = shares.map(p => p.toJSON());
+
+    return {
+      bondPositions,
+      sharePositions,
+    };
+  }
 
   async createOne(data: PrismaCreatePositionData): Promise<PrismaPosition> {
     const position = await this.prisma.position.create({
@@ -19,22 +55,44 @@ export class PositionService {
     return position;
   }
 
-  async calculatePositionAfterDeal(deal: Deal): Promise<void> {
+  async updateOne(
+    id: number,
+    userId: number,
+    data: UpdatePositionData,
+  ): Promise<Position> {
+    const position = await this.prisma.position.update({
+      where: { id: id },
+      data: {
+        ...data,
+        // opinions: {
+        //   connect:
+        //     data.opinions?.map(o => ({
+        //       opinionId_positionId: {
+        //         opinionId: o,
+        //         positionId: id,
+        //       },
+        //     })) ?? [],
+        // },
+      },
+    });
+    return new Position(position);
+  }
+
+  async upsertPosition(data: {
+    exchange: Exchange;
+    portfolioId: number;
+    securityId: number;
+    securityType: SecurityType;
+  }): Promise<void> {
     const position = await this.prisma.position.findFirst({
       where: {
-        exchange: deal.exchange,
-        portfolioId: deal.portfolioId,
-        securityType: deal.securityType,
-        securityId: deal.securityId,
+        ...data,
       },
     });
 
     const deals = await this.prisma.deal.findMany({
       where: {
-        exchange: deal.exchange,
-        portfolioId: deal.portfolioId,
-        securityType: deal.securityType,
-        securityId: deal.securityId,
+        ...data,
       },
     });
 
@@ -62,21 +120,20 @@ export class PositionService {
       },
       0,
     );
-
     if (!position) {
-      this.prisma.position.create({
+      await this.prisma.position.create({
         data: {
-          amount: deal.amount,
+          amount: dealsSummary.amount,
           averagePrice: dealsSummary.averagePrice,
-          exchange: deal.exchange,
-          portfolioId: deal.portfolioId,
-          securityId: deal.securityId,
-          securityType: deal.securityType,
+          exchange: data.exchange,
+          portfolioId: data.portfolioId,
+          securityId: data.securityId,
+          securityType: data.securityType,
           tradeSaldo: dealsSummary.tradeSaldo,
         },
       });
     } else {
-      this.prisma.position.update({
+      await this.prisma.position.update({
         where: {
           id: position.id,
         },
