@@ -2,9 +2,9 @@ name: Deploy to server
 run-name: deploying
 on:
   push:
-    branches: ['main']
+    branches: ["main"]
   pull_request:
-    branches: ['main']
+    branches: ["main"]
 
 jobs:
   deploy:
@@ -25,4 +25,4 @@ jobs:
             npm run build
             npx kill-port 3000
             npx kill-port 3333
-            npm run start &
+            npm run start
