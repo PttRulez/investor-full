@@ -20,3 +20,4 @@ __exportStar(require("./expert-schema"), exports);
 __exportStar(require("./opinion-schema"), exports);
 __exportStar(require("./portfolio-schema"), exports);
 __exportStar(require("./transaction-schema"), exports);
+__exportStar(require("./position-schema"), exports);

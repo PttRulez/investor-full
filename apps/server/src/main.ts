@@ -8,13 +8,13 @@ import * as cookieParser from 'cookie-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('apishka');
+  const configService = app.get(ConfigService);
+
   app.enableCors({
     allowedHeaders: ['content-type'],
-    origin: ['http://localhost:3000', 'https://investor.pttrulez.ru'],
+    origin: configService.getOrThrow('CLIENT_ORIGIN'),
     credentials: true,
   });
-
-  const configService = app.get(ConfigService);
 
   app.use(
     session({
@@ -24,9 +24,11 @@ async function bootstrap() {
     }),
   );
 
+  console.log(' !!!!  Hello from server/main.ts !!!!');
+
   app.use(cookieParser());
 
   app.useGlobalPipes(new ValidationPipe());
-  await app.listen(3333);
+  await app.listen(configService.get('SERVER_PORT') || 4001);
 }
 bootstrap();

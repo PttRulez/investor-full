@@ -20,5 +20,5 @@ var MoexSecurityGroup;
     MoexSecurityGroup["stock_deposit"] = "stock_deposit";
     MoexSecurityGroup["currency_futures"] = "currency_futures";
     MoexSecurityGroup["currency_indices"] = "currency_indices";
-    MoexSecurityGroup["stock_mortgage"] = "stock_mortgage"; // Ипотечный сертификат	
+    MoexSecurityGroup["stock_mortgage"] = "stock_mortgage";
 })(MoexSecurityGroup || (exports.MoexSecurityGroup = MoexSecurityGroup = {}));

@@ -1,0 +1,49 @@
+version: "3"
+
+name: investor_app
+services:
+  postgresdb:
+    container_name: postgresdb
+    image: postgres
+    restart: always
+    ports:
+      - 5433:5432
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - investor_pg_volume:/var/lib/postgresql
+    networks:
+      - investor_network
+
+  backend:
+    container_name: nestjs-api
+    build:
+      context: .
+      dockerfile: ./apps/server/Dockerfile
+    depends_on:
+      - postgresdb
+    ports:
+      - 4001:4001
+    networks:
+      - investor_network
+
+  frontend:
+    container_name: nextjs-client
+    build:
+      context: .
+      dockerfile: ./apps/client/Dockerfile
+    ports:
+      - 3000:3000
+    networks:
+      - investor_network
+
+volumes:
+  investor_pg_volume:
+    external: true
+
+networks:
+  investor_network:
+    external: true
+    name: investor_network

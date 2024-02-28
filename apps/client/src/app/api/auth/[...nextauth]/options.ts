@@ -3,6 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import investorService from '@/axios/investor/investor.service';
 import NextAuth from 'next-auth/next';
 import { cookies } from 'next/headers';
+import axios from 'axios';
 
 const options: NextAuthOptions = {
   pages: {
@@ -25,9 +26,9 @@ const options: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials) return null;
-
+        
         try {
-          const response = await investorService.auth.login(credentials);
+          const response = await axios.post(`${process.env.NEXT_PUBLIC_INVESTOR_API_INTERNAL_URL!}/auth/login`, credentials);
 
           const sessionIdCookie: string | undefined = (
             response.headers['set-cookie'] as string[]

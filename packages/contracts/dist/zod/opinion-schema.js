@@ -10,8 +10,8 @@ exports.CreateOpinionSchema = zod_1.z.object({
     text: zod_1.z.string(),
     securityType: zod_1.z.nativeEnum(enums_1.SecurityType),
     securityId: zod_1.z.number(),
-    sourceLink: zod_1.z.string().optional(),
-    targetPrice: zod_1.z.number().optional(),
+    sourceLink: zod_1.z.string().nullable(),
+    targetPrice: zod_1.z.number().nullable(),
     type: zod_1.z.nativeEnum(enums_1.OpinionType),
 });
 exports.UpdateOpinionSchema = exports.CreateOpinionSchema.partial().extend({

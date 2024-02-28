@@ -123,7 +123,7 @@ const CreateDealForm: FC<DealFormProps> = ({
         control={control}
         name={'date'}
         handleClear={() => resetField('date')}
-        onChange={(newValue: Dayjs) => {
+        onChange={(newValue: Dayjs | null) => {
           if (newValue) {
             setValue('date', newValue?.toDate());
           } else {
