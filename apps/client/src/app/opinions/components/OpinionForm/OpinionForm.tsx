@@ -1,5 +1,5 @@
 import { SubmitHandler, useForm } from 'react-hook-form';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import {
   DefaultFormBox,
   FormDatePicker,
@@ -117,7 +117,7 @@ const OpinionForm = ({
           <FormDatePicker
             control={control}
             handleClear={() => resetField('date')}
-            onChange={(newValue: dayjs.Dayjs) => {
+            onChange={(newValue: Dayjs | null) => {
               if (newValue) {
                 setValue('date', newValue?.toDate());
               } else {

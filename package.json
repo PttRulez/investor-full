@@ -2,6 +2,8 @@
   "name": "investor-turborepo",
   "version": "1.0.0",
   "main": "index.js",
+  "private": true,
+  "preferYarn": true,
   "scripts": {
     "build": "turbo run build",
     "clean": "turbo run clean",
