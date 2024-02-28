@@ -40,10 +40,8 @@ services:
       - investor_network
 
 volumes:
-  investor_pg_volume:
-    external: true
+  pg_volume:
 
 networks:
   investor_network:
-    external: true
     name: investor_network
