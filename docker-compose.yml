@@ -7,7 +7,7 @@ services:
     image: postgres
     restart: always
     ports:
-      - 5433:5432
+      - ${DOCKER_PG_PORT}:5432
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_DB=${POSTGRES_DB}
@@ -25,7 +25,7 @@ services:
     depends_on:
       - postgresdb
     ports:
-      - 4001:4001
+      - ${DOCKER_NEST_PORT}:3001
     networks:
       - investor_network
 
@@ -35,7 +35,7 @@ services:
       context: .
       dockerfile: ./apps/client/Dockerfile
     ports:
-      - 3000:3000
+      - ${DOCKER_NEXT_PORT}:3000
     networks:
       - investor_network
 
