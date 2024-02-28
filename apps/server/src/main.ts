@@ -10,12 +10,6 @@ async function bootstrap() {
   app.setGlobalPrefix('apishka');
   const configService = app.get(ConfigService);
 
-  app.enableCors({
-    allowedHeaders: ['content-type'],
-    origin: configService.getOrThrow('CLIENT_ORIGIN'),
-    credentials: true,
-  });
-
   app.use(
     session({
       secret: configService.getOrThrow('SESSION_SECRET'),
@@ -24,11 +18,9 @@ async function bootstrap() {
     }),
   );
 
-  console.log(' !!!!  Hello from server/main.ts !!!!');
-
   app.use(cookieParser());
 
   app.useGlobalPipes(new ValidationPipe());
-  await app.listen(configService.get('SERVER_PORT') || 4001);
+  await app.listen(configService.get('SERVER_PORT') || 3001);
 }
 bootstrap();
