@@ -3,7 +3,7 @@ version: "3"
 name: investor_app
 services:
   postgresdb:
-    container_name: postgresdb
+    container_name: investor-postgresdb
     image: postgres
     restart: always
     ports:
@@ -18,7 +18,7 @@ services:
       - investor_network
 
   backend:
-    container_name: nestjs-api
+    container_name: investor-api
     build:
       context: .
       dockerfile: ./apps/server/Dockerfile
@@ -30,7 +30,7 @@ services:
       - investor_network
 
   frontend:
-    container_name: nextjs-client
+    container_name: investor-client
     build:
       context: .
       dockerfile: ./apps/client/Dockerfile
