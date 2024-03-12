@@ -10,6 +10,15 @@ async function bootstrap() {
   app.setGlobalPrefix('apishka');
   const configService = app.get(ConfigService);
 
+  const allowedCors = configService.get('ALLOWED_CORS');
+  if (allowedCors) {
+    app.enableCors({
+      allowedHeaders: ['content-type'],
+      origin: allowedCors.split(','),
+      credentials: true,
+    });
+  }
+
   app.use(
     session({
       secret: configService.getOrThrow('SESSION_SECRET'),
@@ -21,6 +30,7 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.useGlobalPipes(new ValidationPipe());
-  await app.listen(configService.get('SERVER_PORT') || 3001);
+  const PORT = configService.get('SERVER_PORT') || 3001;
+  await app.listen(PORT, () => `API Started on port ${PORT}`);
 }
 bootstrap();

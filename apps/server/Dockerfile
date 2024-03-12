@@ -30,5 +30,4 @@ WORKDIR /app
 
 COPY --from=installer /app .
 
-EXPOSE 4001
 ENTRYPOINT ["/bin/sh", "-c" , "yarn turbo db:push && yarn start"]
