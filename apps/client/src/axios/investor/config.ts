@@ -10,13 +10,11 @@ const investorAxiosInstance: AxiosInstance = axios.create({
 investorAxiosInstance.interceptors.request.use(config => {
   config.headers['Accept'] = 'application/json';
   config.headers['Content-Type'] = 'application/json';
-  console.log("REQUEST CONFIG:", config)
   return config;
 });
 
 investorAxiosInstance.interceptors.response.use(
   function (response) {
-    console.log('axios interceptor response:', response)
     return response;
   },
   function (error: AxiosError) {
